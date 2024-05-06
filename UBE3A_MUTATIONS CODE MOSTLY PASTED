@@ -1,0 +1,518 @@
+#INITIALIZE
+
+import pandas as pd
+import numpy as np
+import math 
+mut_test = pd.read_excel("C:/Users/hheath/Downloads/mutation table chart.xlsx")
+aakey = pd.read_excel("C:/Users/hheath/Documents/amino acid key.xlsx")
+ube3a_seq = 'atggccacagcttgtaaaagatcaggagaacctcagtctgacgacattgaagctagccgaatgaagcgagcagctgcaaagcatctaatagaacgctactaccaccagttaactgagggctgtggaaatgaagcctgcacgaatgagttttgtgcttcctgtccaacttttcttcgtatggataataatgcagcagctattaaagccctcgagctttataagattaatgcaaaactctgtgatcctcatccctccaagaaaggagcaagctcagcttaccttgagaactcgaaaggtgcccccaacaactcctgctctgagataaaaatgaacaagaaaggcgctagaattgattttaaagatgtgacttacttaacagaagagaaggtatatgaaattcttgaattatgtagagaaagagaggattattcccctttaatccgtgttattggaagagttttttctagtgctgaggcattggtacagagcttccggaaagttaaacaacacaccaaggaagaactgaaatctcttcaagcaaaagatgaagacaaagatgaagatgaaaaggaaaaagctgcatgttctgctgctgctatggaagaagactcagaagcatcttcctcaaggataggtgatagctcacagggagacaacaatttgcaaaaattaggccctgatgatgtgtctgtggatattgatgccattagaagggtctacaccagattgctctctaatgaaaaaattgaaactgcctttctcaatgcacttgtatatttgtcacctaacgtggaatgtgacttgacgtatcacaatgtatactctcgagatcctaattatctgaatttgttcattatcgtaatggagaatagaaatctccacagtcctgaatatctggaaatggctttgccattattttgcaaagcgatgagcaagctaccccttgcagcccaaggaaaactgatcagactgtggtctaaatacaatgcagaccagattcggagaatgatggagacatttcagcaacttattacttataaagtcataagcaatgaatttaacagtcgaaatctagtgaatgatgatgatgccattgttgctgcttcgaagtgcttgaaaatggtttactatgcaaatgtagtgggaggggaagtggacacaaatcacaatgaagaagatgatgaagagcccatccctgagtccagcgagctgacacttcaggaacttttgggagaagaaagaagaaacaagaaaggtcctcgagtggaccccctggaaactgaacttggtgttaaaaccctggattgtcgaaaaccacttatcccttttgaagagtttattaatgaaccactgaatgaggttctagaaatggataaagattatacttttttcaaagtagaaacagagaacaaattctcttttatgacatgtccctttatattgaatgctgtcacaaagaatttgggattatattatgacaatagaattcgcatgtacagtgaacgaagaatcactgttctctacagcttagttcaaggacagcagttgaatccatatttgagactcaaagttagacgtgaccatatcatagatgatgcacttgtccggctagagatgatcgctatggaaaatcctgcagacttgaagaagcagttgtatgtggaatttgaaggagaacaaggagttgatgagggaggtgtttccaaagaattttttcagctggttgtggaggaaatcttcaatccagatattggtatgttcacatacgatgaatctacaaaattgttttggtttaatccatcttcttttgaaactgagggtcagtttactctgattggcatagtactgggtctggctatttacaataactgtatactggatgtacattttcccatggttgtctacaggaagctaatggggaaaaaaggaacttttcgtgacttgggagactctcacccagttctatatcagagtttaaaagatttattggagtatgaagggaatgtggaagatgacatgatgatcactttccagatatcacagacagatctttttggtaacccaatgatgtatgatctaaaggaaaatggtgataaaattccaattacaaatgaaaacaggaaggaatttgtcaatctttattctgactacattctcaataaatcagtagaaaaacagttcaaggcttttcggagaggttttcatatggtgaccaatgaatctcccttaaagtacttattcagaccagaagaaattgaattgcttatatgtggaagccggaatctagatttccaagcactagaagaaactacagaatatgacggtggctataccagggactctgttctgattagggagttctgggaaatcgttcattcatttacagatgaacagaaaagactcttcttgcagtttacaacgggcacagacagagcacctgtgggaggactaggaaaattaaagatgattatagccaaaaatggcccagacacagaaaggttacctacatctcatacttgctttaatgtgcttttacttccggaatactcaagcaaagaaaaacttaaagagagattgttgaaggccatcacgtatgccaaaggatttggcatgctgtaa'
+ube3a_seq = ube3a_seq.upper()
+aa = pd.read_excel("C:/Users/hheath/Documents/amino acids list_lei.xlsx")
+#split into codons, write into list
+ube3a_cod = []
+ube3a_codons = list(zip(*[iter(ube3a_seq)]*3))
+for i in range( 0, len(ube3a_codons)): 
+    cod = ''.join(ube3a_codons[i])
+    cod = cod.upper()
+    ube3a_cod.append (cod)
+
+#PART1: AMINO ACID ID, MUTATION LIST, AMINO ACID CHANGES
+
+#amino acid key
+ala = list(aakey.Ala)
+cys = list(aakey.Cys)
+asp = list(aakey.Asp)
+glu = list(aakey.Glu)
+phe = list(aakey.Phe)
+gly = list(aakey.Gly)
+his = list(aakey.His)
+ile = list(aakey.Ile)
+lys = list(aakey.Lys) 
+leu = list(aakey.Leu)
+met = list(aakey.Met)
+pro = list(aakey.Pro)
+gln = list(aakey.Gln)
+arg = list(aakey.Arg)
+ser = list(aakey.Ser)
+thr = list(aakey.Thr)
+val = list(aakey.Val)
+trp = list(aakey.Trp)
+tyr = list(aakey.Tyr)
+stop= list(aakey.stop)
+asn = list(aakey.Asn)
+
+#FUNCTIONS
+
+def aa_id (codon): 
+    if codon in ala: 
+        return('Ala')
+    if codon in cys: 
+        return('Cys')
+    if codon in asp: 
+        return('Asp')
+    if codon in glu: 
+        return('Glu')
+    if codon in phe: 
+        return('Phe')
+    if codon in gly: 
+        return('Gly')
+    if codon in his: 
+        return('His')
+    if codon in ile: 
+        return('Ile')
+    if codon in lys: 
+        return('Lys')
+    if codon in leu: 
+        return('Leu')
+    if codon in met: 
+        return('Met')
+    if codon in pro: 
+        return('Pro')
+    if codon in gln: 
+        return('Gln')
+    if codon in arg: 
+        return('Arg')
+    if codon in ser: 
+        return('Ser')
+    if codon in thr: 
+        return('Thr')
+    if codon in val: 
+        return('Val')
+    if codon in trp: 
+        return('Trp')
+    if codon in tyr: 
+        return('Tyr')
+    if codon in stop: 
+        return('STOP')  
+    if codon in asn: 
+        return ('Asn')
+
+def nuc1_change(codon): #returns 3 mutations of nucleotide 1, counts mutations resulting in unique amino acid changes
+    temp1 = list(codon)
+    temp2 = list(codon)
+    temp3 = list(codon)
+    temp4 = list(codon)
+    
+    mutlst = []                        #initialize mutation count
+    
+    if temp1[0] == 'C': 
+        altc = 'original'
+        temp1 = ''.join(temp1)         #original codon designation
+    else:
+        temp1[0] = 'C'                 #change nucleotide #1 to C
+        temp1 = ''.join(temp1)
+        altc = aa_id(temp1)            #amino acid ID of mutation
+        if altc == aa_id(codon):       #AA change vs no change 
+            altc = 'no_change'
+    
+    if temp2[0] == 'G': 
+        altg = 'original'
+        temp2 = ''.join(temp2)
+    else:
+        temp2[0] = 'G'
+        temp2 = ''.join(temp2)
+        altg = aa_id(temp2)
+        if altg == aa_id(codon): 
+            altg = 'no_change'     
+            
+    if temp3[0] == 'T': 
+        altt = 'original'
+        temp3 = ''.join(temp3)
+    else:
+        temp3[0] = 'T'
+        temp3 = ''.join(temp3)
+        altt = aa_id(temp3)
+        if altt == aa_id(codon): 
+            altt = 'no_change'
+            
+    if temp4[0] == 'A': 
+        alta = 'original'
+        temp4 = ''.join(temp4)
+    else:
+        temp4[0] = 'A'
+        temp4 = ''.join(temp4)
+        alta = aa_id(temp4)
+        if alta == aa_id(codon): 
+            alta = 'no_change'
+            
+    if altc != 'no_change' and altc != 'original':    #putting all mutations into a list
+        mutlst.append(altc)
+    if altg != 'no_change' and altg != 'original': 
+        mutlst.append(altg)
+    if altt != 'no_change' and altt != 'original': 
+        mutlst.append(altt)
+    if alta != 'no_change' and alta != 'original': 
+        mutlst.append(alta)
+    mutset = set(mutlst)                              #change list to set to eliminate repeated values
+    mutations = len(mutset)                           #count items in the mutation set = number of unique outcomes
+    
+    if altc == 'original':                            #return original codon and aa, then alts, then mutation count
+        aaid1 = aa_id(temp1)
+        return temp1,aaid1,altc,temp2,altg,temp3,altt,temp4,alta,mutations
+    if altg == 'original': 
+        aaid1 = aa_id(temp2)
+        return temp2,aaid1,altg,temp3,altt,temp4,alta,temp1,altc,mutations
+    if alta == 'original': 
+        aaid1 = aa_id(temp4)
+        return temp4,aaid1,alta,temp1,altc,temp2,altg,temp3,altt,mutations
+    if altt == 'original': 
+        aaid1 = aa_id(temp3)
+        return temp3,aaid1,altt,temp4,alta,temp1,altc,temp2,altg,mutations
+
+def nuc2_change(codon):  #same code as nuc1_change, except operates on nucleotide 2
+    temp1 = list(codon)
+    temp2 = list(codon)
+    temp3 = list(codon)
+    temp4 = list(codon)
+    
+    mutlst = []
+    
+    if temp1[1] == 'C': 
+        altc = 'original'
+        temp1 = ''.join(temp1)
+    else:
+        temp1[1] = 'C'
+        temp1 = ''.join(temp1)
+        altc = aa_id(temp1)
+        if altc == aa_id(codon): 
+            altc = 'no_change'
+    
+    if temp2[1] == 'G': 
+        altg = 'original'
+        temp2 = ''.join(temp2)
+    else:
+        temp2[1] = 'G'
+        temp2 = ''.join(temp2)
+        altg = aa_id(temp2)
+        if altg == aa_id(codon): 
+            altg = 'no_change'       
+            
+    if temp3[1] == 'T': 
+        altt = 'original'
+        temp3 = ''.join(temp3)
+    else:
+        temp3[1] = 'T'
+        temp3 = ''.join(temp3)
+        altt = aa_id(temp3)
+        if altt == aa_id(codon): 
+            altt = 'no_change'
+            
+    if temp4[1] == 'A': 
+        alta = 'original'
+        temp4 = ''.join(temp4)
+    else:
+        temp4[1] = 'A'
+        temp4 = ''.join(temp4)
+        alta = aa_id(temp4)
+        if alta == aa_id(codon): 
+            alta = 'no_change'  
+    
+    if altc != 'no_change' and altc != 'original':    #mutation count
+        mutlst.append(altc)
+    if altg != 'no_change' and altg != 'original': 
+        mutlst.append(altg)
+    if altt != 'no_change' and altt != 'original': 
+        mutlst.append(altt)
+    if alta != 'no_change' and alta != 'original': 
+        mutlst.append(alta)
+    mutset = set(mutlst)
+    mutations = len(mutset)
+            
+    if altc == 'original':
+        return temp1,altc,temp2,altg,temp3,altt,temp4,alta,mutations
+    if altg == 'original': 
+        return temp2,altg,temp3,altt,temp4,alta,temp1,altc,mutations
+    if alta == 'original': 
+        return temp4,alta,temp1,altc,temp2,altg,temp3,altt,mutations
+    if altt == 'original': 
+        return temp3,altt,temp4,alta,temp1,altc,temp2,altg,mutations
+
+def nuc3_change(codon): # same code as nuc1_change and nuc2_change; except operates on nucleotide 3
+    temp1 = list(codon)
+    temp2 = list(codon)
+    temp3 = list(codon)
+    temp4 = list(codon)
+    
+    mutlst = []
+    
+    if temp1[2] == 'C': 
+        altc = 'original'
+        temp1 = ''.join(temp1)
+    else:
+        temp1[2] = 'C'
+        temp1 = ''.join(temp1)
+        altc = aa_id(temp1)
+        if altc == aa_id(codon): 
+            altc = 'no_change'
+    
+    if temp2[2] == 'G': 
+        altg = 'original'
+        temp2 = ''.join(temp2)
+    else:
+        temp2[2] = 'G'
+        temp2 = ''.join(temp2)
+        altg = aa_id(temp2)
+        if altg == aa_id(codon): 
+            altg = 'no_change'
+            
+    if temp3[2] == 'T': 
+        altt = 'original'
+        temp3 = ''.join(temp3)
+    else:
+        temp3[2] = 'T'
+        temp3 = ''.join(temp3)
+        altt = aa_id(temp3)
+        if altt == aa_id(codon): 
+            altt = 'no_change'
+            
+    if temp4[2] == 'A': 
+        alta = 'original'
+        temp4 = ''.join(temp4)
+    else:
+        temp4[2] = 'A'
+        temp4 = ''.join(temp4)
+        alta = aa_id(temp4)
+        if alta == aa_id(codon): 
+            alta = 'no_change'       
+    
+    if altc != 'no_change' and altc != 'original':    #mutation count
+        mutlst.append(altc)
+    if altg != 'no_change' and altg != 'original': 
+        mutlst.append(altg)
+    if altt != 'no_change' and altt != 'original': 
+        mutlst.append(altt)
+    if alta != 'no_change' and alta != 'original': 
+        mutlst.append(alta)
+    mutset = set(mutlst)
+    mutations = len(mutset)
+            
+    if altc == 'original': 
+        return temp1,altc,temp2,altg,temp3,altt,temp4,alta,mutations
+    if altg == 'original': 
+        return temp2,altg,temp3,altt,temp4,alta,temp1,altc,mutations
+    if alta == 'original': 
+        return temp4,alta,temp1,altc,temp2,altg,temp3,altt,mutations
+    if altt == 'original': 
+        return temp3,altt,temp4,alta,temp1,altc,temp2,altg,mutations
+
+#codon number starting at 1
+codnum = np.arange(1, (len(ube3a_cod)+1))
+codnumdf = pd.DataFrame(codnum, columns = ['codon #'])
+
+#create dataframes for nuc1, nuc2, and nuc3
+
+n1res = []
+for i in range(0,len(ube3a_cod)): 
+    n1res.append(nuc1_change(ube3a_cod[i]))
+res1 = pd.DataFrame(n1res)
+
+n2res = []
+for i in range(0,len(ube3a_cod)): 
+    n2res.append(nuc2_change(ube3a_cod[i]))
+res2 = pd.DataFrame(n2res)
+
+n3res = []
+for i in range(0,len(ube3a_cod)): 
+    n3res.append(nuc3_change(ube3a_cod[i]))
+res3 = pd.DataFrame(n3res)
+
+res1.columns = ['original codon', 'AA ID', 'ignore', 'nuc1 alt1', 'aa1 alt1', 'nuc1 alt2', 'aa1 alt2', 'nuc1 alt3', 'aa1 alt3', 'mutations']
+res2.columns = ['original codon', 'ignore', 'nuc2 alt1', 'aa2 alt1', 'nuc2 alt2', 'aa2 alt2', 'nuc2 alt3', 'aa2 alt3', 'mutations']
+res3.columns = ['original codon', 'ignore', 'nuc3 alt1', 'aa3 alt1', 'nuc3 alt2', 'aa3 alt2', 'nuc3 alt3', 'aa3 alt3', 'mutations']
+
+#combines codon #, nuc1, nuc2, and nuc3 into one dataframe (add columns, not rows)
+#writes to excel file 'aminotest2'
+aminochange = pd.concat([codnumdf,res1,res2,res3], axis = 1)
+with pd.ExcelWriter("C:/Users/hheath/Documents/aminotest2.xlsx") as writer:
+    aminochange.to_excel(writer)
+#UN-SET, DELETE NO_CHANGE, THEN USE SET() TO GET RID OF REPEATS, CONCAT INTO A DF
+muts = []
+for i in range (0, len(ube3a_cod)): 
+    muts.append(flip(res1['aa1 alt1'], res1['aa1 alt2'], res1['aa1 alt3'], res2['aa2 alt1'],res2['aa2 alt2'],res2['aa2 alt3'],res3['aa3 alt1'],res3['aa3 alt2'],res3['aa3 alt3'],i))
+
+def mutlst (genome, ind): 
+    NCcount = 0
+    STcount = 0 
+    lst = genome[ind]
+    for i in range(0, len(lst)): 
+        if lst[i] == 'no_change': 
+            NCcount += 1
+        if lst[i] == 'STOP': 
+            STcount += 1
+    for i in range(0, NCcount): 
+        lst.remove('no_change')
+    for i in range(0, STcount): 
+        lst.remove('STOP')
+    lst = set(lst)
+    return lst
+
+# PART 2: GROUP AMINO ACIDS, TRACK AMINO ACID GROUP CHANGES
+def groupid(codon): #takes a codon, returns the amino acid group
+    aa = aa_id(codon)
+    if aa == 'Ala' or aa =='Ile' or aa == 'Leu' or aa == 'Val' or aa == 'Met': 
+        return '1: hydrophobic, small'  
+    if aa == 'Tyr' or aa == 'Trp' or aa == 'Phe':
+        return '2: hydrophobic, big'
+    if aa == 'Lys' or aa == 'Arg' or aa == 'His': 
+        return '3: hydrophobic, positive charge'
+    if aa == 'Asp' or aa == 'Glu': 
+        return '4:hydrophobic negative charge'
+    if aa == 'Ser' or aa == 'Thr': 
+        return '5: polar uncharged 1'
+    if aa == 'Gln' or aa == 'Asn': 
+        return '6: polar uncharged 2'
+    if aa == 'Gly':
+        return '7: SPC Gly'
+    if aa == 'Pro':
+        return '8: SPC Pro'
+    if aa == 'Cys': 
+        return '9: SPC Cys'
+    if aa == 'STOP': 
+        return '10: STOP'
+o_cod  = res2['original codon'] #I straight up don't remember what this does. something to do with the groups 
+alt1_1 = res1['nuc1 alt1']
+alt1_2 = res1['nuc1 alt2']
+alt1_3 = res1['nuc1 alt3']
+alt2_1 = res2['nuc2 alt1']
+alt2_2 = res2['nuc2 alt2']
+alt2_3 = res2['nuc2 alt3']
+alt3_1 = res3['nuc3 alt1']
+alt3_2 = res3['nuc3 alt2']
+alt3_3 = res3['nuc3 alt3']
+
+group_1_1 = []
+group_1_2 = []
+group_1_3 = []
+group_2_1 = []
+group_2_2 = []
+group_2_3 = []
+group_3_1 = []
+group_3_2 = []
+group_3_3 = []
+o_cod_group = []
+
+for i in range (0, len(o_cod)): 
+    group = groupid(o_cod[i])
+    o_cod_group.append(group)
+df_cod = pd.DataFrame(o_cod_group)
+
+for i in range (0, len(alt1_1)): 
+    group = groupid(alt1_1[i])
+    if group == o_cod_group[i]: 
+        group = 'no_change'
+    group_1_1.append(group)
+
+for i in range (0, len(alt1_2)): 
+    group = groupid(alt1_2[i])
+    if group == o_cod_group[i]: 
+        group = 'no_change'
+    group_1_2.append(group)
+
+for i in range (0, len(alt1_3)): 
+    group = groupid(alt1_3[i])
+    if group == o_cod_group[i]: 
+        group = 'no_change'
+    group_1_3.append(group)
+
+for i in range (0, len(alt2_1)): 
+    group = groupid(alt2_1[i])
+    if group == o_cod_group[i]: 
+        group = 'no_change'
+    group_2_1.append(group)
+
+for i in range (0, len(alt2_2)): 
+    group = groupid(alt2_2[i])
+    if group == o_cod_group[i]: 
+        group = 'no_change'
+    group_2_2.append(group)
+
+for i in range (0, len(alt2_3)): 
+    group = groupid(alt2_3[i])
+    if group == o_cod_group[i]: 
+        group = 'no_change'
+    group_2_3.append(group)
+    
+for i in range (0, len(alt3_1)): 
+    group = groupid(alt3_1[i])
+    if group == o_cod_group[i]: 
+        group = 'no_change'
+    group_3_1.append(group)
+
+for i in range (0, len(alt3_2)): 
+    group = groupid(alt3_2[i])
+    if group == o_cod_group[i]: 
+        group = 'no_change'
+    group_3_2.append(group)
+
+for i in range (0, len(alt3_3)): 
+    group = groupid(alt3_3[i])
+    if group == o_cod_group[i]: 
+        group = 'no_change'
+    group_3_3.append(group)
+
+def flip(l1, l2, l3, l4, l5, l6, l7, l8, l9, ind): #flips axes. used to check rows (not cols) for mutations
+    flip = []                                      #ex: 0 1 2  flip(col1,col2,col3,0)  
+    flip.append(l1[ind])                           #    4 5 6         ->               [0,1,2] 
+    flip.append(l2[ind])
+    flip.append(l3[ind])
+    flip.append(l4[ind])
+    flip.append(l5[ind])
+    flip.append(l6[ind])
+    flip.append(l7[ind])
+    flip.append(l8[ind])
+    flip.append(l9[ind])
+    return flip
+
+def groupchange(i): #checks one row (codon) for group changes. gc = group change count
+    gc = 0
+    c1 = flip (group_1_1, group_1_2, group_1_3,group_2_1, group_2_2, group_2_3,group_3_1, group_3_2, group_3_3, i)
+    for j in range (0, len(c1)): 
+        if c1[j] != 'no_change': 
+            gc += 1
+    return gc
+
+def groupchange2(i):#checks one row(codon) for group changes. gc = UNIQUE group changes in a row
+    gclst = []
+    c1 = flip (group_1_1, group_1_2, group_1_3,group_2_1, group_2_2, group_2_3,group_3_1, group_3_2, group_3_3, i) 
+    for j in range (0, len(c1)): 
+        if c1[j] != 'no_change': 
+            gclst.append(c1[j])
+    gcset = set(gclst)
+    gc = len(gcset)
+    return gc
+
+def groupchange3(lst): 
+    changelst = []
+    for i in range(0, len(lst)): 
+        group = groupid(lst[i])
+        #if group == groupid(o_cod[i]): 
+        #    changelst.append('NC')
+        if group != groupid(o_cod[i]): 
+            changelst.append(i)
+    return changelst
+
+def groupchange4 (i): 
+    gclst = []
+    c1 = flip (group_1_1, group_1_2, group_1_3,group_2_1, group_2_2, group_2_3,group_3_1, group_3_2, group_3_3, i) 
+    for j in range (0, len(c1)): 
+        if c1[j] != 'no_change' and c1[j] != '10: STOP':
+            gclst.append(c1[j])
+    gcset = set(gclst)
+    gc = len(gcset)
+    return gc
+
+g11 = pd.DataFrame(group_1_1)
+g12 = pd.DataFrame(group_1_2)
+g13 = pd.DataFrame(group_1_3)
+g21 = pd.DataFrame(group_2_1)
+g22 = pd.DataFrame(group_2_2)
+g23 = pd.DataFrame(group_2_3)
+g31 = pd.DataFrame(group_3_1)
+g32 = pd.DataFrame(group_3_2)
+g33 = pd.DataFrame(group_3_3)
+
+gc_highlight = pd.concat([g11,g12,g13,g21,g22,g23,g31,g32,g33], axis = 1)
+
+gc_highlight.columns = ['g11','g12','g13','g21','g22','g23','g31','g32','g33']
+#gc_highlight.style.applymap(lambda x: 'background-color : cyan' if x != 'no_change' else '')
+
